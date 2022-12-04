@@ -1,8 +1,7 @@
-// inventory panel lists all the items in the inventory
-
 import React from "react";
 import styles from "/styles/InventoryPanel.module.css";
 import { useState, useEffect, useRef } from "react";
+import { Chart } from "react-google-charts";
 
 export class Warehouse {
     constructor(
@@ -301,70 +300,134 @@ export function InventoryPanel({ inventoryItems }) {
     );
 
     return (
-        <div className={styles.inventory_panel}>
-            <div className={styles.inventory_panel__warehouse}>
-                <h1>Warehouse: {warehouseMenu}</h1>
-                <p>Total Space: {warehouseSpace}</p>
-                <p>Remaining Space: {warehouseSpaceRemaining}</p>
-            </div>
-            <div className={styles.inventory_panel__inventory}>
-                <h1>Inventory</h1>
-                <ul>
-                    {itemList.map((item, index) => (
-                        <li key={index}>
-                            <p>
-                                Item ID: {item.item_id} Quantity:{" "}
-                                {item.item_quantity}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+        <div style={{display:'flex', justifyContent:'space-evenly'}}>
+            <div tyle={{display:'flex', flexDirection:'column', flexGrow:'1'}}>
+                <div className={styles.inventory_panel}>
+                    <div className={styles.inventory_panel__warehouse}>
+                        <h1>Warehouse: {warehouseMenu}</h1>
+                        <p>Total Space: {warehouseSpace}</p>
+                        <p>Remaining Space: {warehouseSpaceRemaining}</p>
+                    </div>
+                    <div className={styles.inventory_panel__inventory}>
+                        <h1>Inventory</h1>
+                        <ul>
+                            {itemList.map((item, index) => (
+                                <li key={index}>
+                                    <p>
+                                        Item ID: {item.item_id} Quantity:{" "}
+                                        {item.item_quantity}
+                                    </p>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-            {/* add/remove */}
-            <div className={styles.inventory_panel__add_remove}>
-                <h1>Add/Remove Item</h1>
-                <form>
-                    <label>
-                        Item ID:
-                        <input
-                            type="text"
-                            value={item}
-                            onChange={(e) => {
-                                setItem(e.target.value);
-                            }}
-                        />
-                    </label>
-                    <br />
-                    <label>
-                        Quantity:
-                        <input
-                            type="number"
-                            value={quantity}
-                            onChange={(e) => {
-                                setQuantity(e.target.value);
-                            }}
-                        />
-                    </label>
-                    <br />
-                    <input type="button" value="Add" onClick={addItem} />
-                    <input type="button" value="Remove" onClick={removeItem} />
-                </form>
+                    {/* add/remove */}
+                    <div className={styles.inventory_panel__add_remove}>
+                        <h1>Add/Remove Item</h1>
+                        <form>
+                            <label>
+                                Item ID:
+                                <input
+                                    type="text"
+                                    value={item}
+                                    onChange={(e) => {
+                                        setItem(e.target.value);
+                                    }}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Quantity:
+                                <input
+                                    type="number"
+                                    value={quantity}
+                                    onChange={(e) => {
+                                        setQuantity(e.target.value);
+                                    }}
+                                />
+                            </label>
+                            <br />
+                            <input type="button" value="Add" onClick={addItem} />
+                            <input type="button" value="Remove" onClick={removeItem} />
+                        </form>
+                    </div>
+                    <div className={styles.inventory_panel__history}>
+                        <h1>History</h1>
+                        <ul>
+                            {warehouseList[warehouse].changes
+                                .reverse()
+                                .map((change, index) => (
+                                    <li key={index}>
+                                        <p>
+                                            {change.status} Item ID: {change.item_id} Quantity:{" "}
+                                            {change.total_quantity}
+                                        </p>
+                                    </li>
+                                ))}
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div className={styles.inventory_panel__history}>
-                <h1>History</h1>
-                <ul>
-                    {warehouseList[warehouse].changes
-                        .reverse()
-                        .map((change, index) => (
-                            <li key={index}>
-                                <p>
-                                    {change.status} Item ID: {change.item_id} Quantity:{" "}
-                                    {change.total_quantity}
-                                </p>
-                            </li>
-                        ))}
-                </ul>
+            <div style={{display:'flex',flexDirection:'column', flexGrow:'1'}}>
+                {/* google visualisation api to create bar chart from inventory */}
+                <div className={styles.chart} style={{display:'inline-flex'}}>
+                    <Chart
+                        width={"100%"}
+                        height={"300px"}
+                        chartType="Bar"
+                        loader={<div>Loading Chart</div>}
+                        data={[
+                            ["Item ID", "Quantity"],
+                            ...itemList.map((item) => [
+                                item.item_id,
+                                item.item_quantity,
+                            ]),
+                        ]}
+                        options={{
+                            chart: {
+                                title: "Inventory",
+                                subtitle: "Item ID: Quantity",
+                            },
+                        }}
+                        rootProps={{ "data-testid": "1" }}
+                    />
+                    <Chart
+                        width={"100%"}
+                        height={"300px"}
+                        chartType="PieChart"
+                        loader={<div>Loading Chart</div>}
+                        data={[
+                            ["Item ID", "Quantity"],
+                            ...itemList.map((item) => [
+                                item.item_id,
+                                item.item_quantity,
+                            ]),
+                        ]}
+                        options={{
+                            title: "Inventory",
+                        }}
+                        rootProps={{ "data-testid": "2" }}
+                    />                                
+                </div>            
+                <Chart
+                    width={"100%"}
+                    height={"300px"}
+                    chartType="Gauge"
+                    loader={<div>Loading Chart</div>}
+                    data={[
+                        ["Label", "Value"],
+                        ["Remaining", warehouseSpaceRemaining],
+                    ]}
+                    options={{
+                        redFrom: 0,
+                        redTo: 10,
+                        yellowFrom: 10,
+                        yellowTo: 20,
+                        minorTicks: 5,
+                    }}
+                    rootProps={{ "data-testid": "3" }}
+                />
             </div>
         </div>
     );
