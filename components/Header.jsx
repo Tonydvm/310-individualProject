@@ -8,6 +8,7 @@ import NavLinks from "./NavLinks";
 import { FaRegHospital } from "react-icons/fa";
 
 export const LINK_LIST = [
+    "Feed",
     "Order",
     "Shipments",
     "Warehouse",

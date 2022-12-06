@@ -3,16 +3,19 @@ import styles from "/styles/ShipmentPanel.module.css";
 import SearchBar from "./SearchBar";
 import Generator from "/utils/generators.js";
 import { Button } from "/components/Button";
+import { GoogleMap, DistanceMatrixService } from "react-google-maps";
 
 //Shipment class
 export class Shipment {
-    constructor(shipment_id, price, status, priority, date, content) {
+    constructor(shipment_id, price, status, priority, date, locationFrom, locationTo, content) {
         this.shipment_id = shipment_id;
         this.price = price;
         this.status = status;
         this.priority = priority;
         this.date = date;
         this.content = content;
+        this.locationFrom = locationFrom;
+        this.locationTo = locationTo;
     }
 
     static priceFormatter = new Intl.NumberFormat("en-CA", {
@@ -116,6 +119,71 @@ export const ShipmentList = ({ item }) => {
         setShipment_id(item.shipment_id);
     }, [item]);
 
+    const getDistance = (locationFrom, locationTo) => {
+        // use google distance matrix api to get distance
+
+        const [distance, setDistance] = useState(0);
+        const [duration, setDuration] = useState(0);
+        const [distanceString, setDistanceString] = useState("");
+        const [durationString, setDurationString] = useState("");
+
+        const distanceMatrixService = useRef();
+
+        const onLoad = (distanceMatrixService) => {
+            distanceMatrixService.current = distanceMatrixService;
+        }
+
+        const onUnmount = () => {
+            distanceMatrixService.current = null;
+        }
+
+        const onDistanceMatrixLoad = (response) => {
+
+            const results = response.rows[0].elements;
+            const distance = results[0].distance.text;
+            const duration = results[0].duration.text;
+
+            setDistance(distance);
+            setDuration(duration);
+            setDistanceString(distance);
+            setDurationString(duration);
+        }
+
+        const onError = (response) => {
+            console.log(response);
+        }
+
+        return (
+            <div>
+                
+                <GoogleMap
+                    // mapContainerStyle={containerStyle}
+                    // center={center}
+                    // zoom={10}
+                >
+                    <DistanceMatrixService
+                        options={{
+                            origins: [locationFrom],
+                            destinations: [locationTo],
+                            travelMode: "DRIVING",
+                        }}
+                        callback={onDistanceMatrixLoad}
+                        onLoad={onLoad}
+                        onUnmount={onUnmount}
+                    />
+                </GoogleMap>
+                <div>
+                    <span>
+                        <b>Distance:</b> {distanceString}
+                    </span>
+                    <span>
+                        <b>Duration:</b> {durationString}
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <li>
             <div className={styles.shipment}>
@@ -133,6 +201,16 @@ export const ShipmentList = ({ item }) => {
                 </span>
                 <span>
                     <b>Date:</b> {date}
+                </span>
+                <span> 
+                    <b>Location From:</b> {item.locationFrom}
+                </span>
+                <span>
+                    <b>Location To:</b> {item.locationTo}
+                </span>
+                {/* display distance from getdistance */}
+                <span>
+                    <b>Distance:</b> {getDistance(item.locationFrom, item.locationTo)}
                 </span>
                 <span>
                     <b>Content:</b>
