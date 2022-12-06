@@ -38,6 +38,7 @@ Component tests are in `cypress/component`.
 
 ### Google Feed API: 
 Reads RSS feed from WHO, then parses title, description, and publishing date to provide a feed page that can tell staff about ongoing problems. 
+Error handling is used, and a loading title is provided to show the user that the system is working to show the rss feed.
 
 ### Google Visualization API: 
-Used to visualize remaining space in the inventory for each warehouse. A bar chart is used to emphasize the amounts of each item, a pie chart to show how the inventory space is being used, and a guage chart to give a visual read of total space being used. 
+Used to visualize remaining space in the inventory for each warehouse with error handling. A bar chart is used to emphasize the amounts of each item, a pie chart to show how the inventory space is being used, and a guage chart to give a visual read of total space being used. 
